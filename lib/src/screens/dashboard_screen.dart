@@ -19,7 +19,11 @@ class DashboardScreen extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.shield, size: 80, color: Theme.of(context).colorScheme.primary),
+                  Icon(
+                    Icons.shield,
+                    size: 80,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                   const SizedBox(height: 20),
                   Text(
                     'Defense Dashboard',
@@ -44,34 +48,41 @@ class AppSidebar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: 250,
-      color: Theme.of(context).colorScheme.surface,
-      child: ListView(
-        padding: const EdgeInsets.symmetric(vertical: 20),
-        children: [
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-            child: Text(
-              'PREFLIGHT',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, letterSpacing: 1.5, color: Colors.deepPurpleAccent),
+      child: Material(
+        color: Theme.of(context).colorScheme.surface,
+        child: ListView(
+          padding: const EdgeInsets.symmetric(vertical: 20),
+          children: [
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+              child: Text(
+                'PREFLIGHT',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.5,
+                  color: Colors.deepPurpleAccent,
+                ),
+              ),
             ),
-          ),
-          const Divider(color: Colors.grey),
-          ListTile(
-            leading: const Icon(Icons.folder_special, color: Colors.grey),
-            title: const Text('Active Projects'),
-            onTap: () {},
-          ),
-          ListTile(
-            leading: const Icon(Icons.rule, color: Colors.grey),
-            title: const Text('Edge Cases'),
-            onTap: () {},
-          ),
-          ListTile(
-            leading: const Icon(Icons.psychology, color: Colors.grey),
-            title: const Text('Architecture Flashcards'),
-            onTap: () {},
-          ),
-        ],
+            const Divider(color: Colors.grey),
+            ListTile(
+              leading: const Icon(Icons.folder_special, color: Colors.grey),
+              title: const Text('Active Projects'),
+              onTap: () {},
+            ),
+            ListTile(
+              leading: const Icon(Icons.rule, color: Colors.grey),
+              title: const Text('Edge Cases'),
+              onTap: () {},
+            ),
+            ListTile(
+              leading: const Icon(Icons.psychology, color: Colors.grey),
+              title: const Text('Architecture Flashcards'),
+              onTap: () {},
+            ),
+          ],
+        ),
       ),
     );
   }
