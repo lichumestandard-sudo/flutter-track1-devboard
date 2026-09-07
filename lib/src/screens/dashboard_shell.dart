@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'defense_dashboard_screen.dart';
+import 'netguard_logs_screen.dart'; // <-- Added the import
 
 class DashboardShell extends StatefulWidget {
   const DashboardShell({super.key});
@@ -14,7 +15,7 @@ class _DashboardShellState extends State<DashboardShell> {
   // The different views for your dashboard
   final List<Widget> _pages = [
     const DefenseDashboardScreen(), 
-    const Center(child: Text('NetGuard Port Scanner Logs')),
+    const NetGuardLogsScreen(), // <-- Updated to load the new NetGuard table
     const Center(child: Text('System Settings')),
   ];
 
