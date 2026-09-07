@@ -12,9 +12,8 @@ class _DashboardShellState extends State<DashboardShell> {
   int _selectedIndex = 0;
 
   // The different views for your dashboard
-  // You can replace these with your actual screen widgets as you build them
   final List<Widget> _pages = [
-    const Center(child: Text('Defense Dashboard Active')), 
+    const DefenseDashboardScreen(), 
     const Center(child: Text('NetGuard Port Scanner Logs')),
     const Center(child: Text('System Settings')),
   ];
