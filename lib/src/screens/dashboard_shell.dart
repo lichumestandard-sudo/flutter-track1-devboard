@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
 import 'defense_dashboard_screen.dart';
 import 'netguard_logs_screen.dart';
-import 'settings_screen.dart'; 
+import 'settings_screen.dart';
 
 class DashboardShell extends StatefulWidget {
-  const DashboardShell({super.key});
+  // 1. Accept the properties from main.dart
+  final bool isDarkMode;
+  final ValueChanged<bool> onThemeChanged;
+
+  const DashboardShell({
+    super.key,
+    required this.isDarkMode,
+    required this.onThemeChanged,
+  });
 
   @override
   State<DashboardShell> createState() => _DashboardShellState();
@@ -13,29 +21,29 @@ class DashboardShell extends StatefulWidget {
 class _DashboardShellState extends State<DashboardShell> {
   int _selectedIndex = 0;
 
-  // The different views for your dashboard
-  final List<Widget> _pages = [
-    const DefenseDashboardScreen(), 
-    const NetGuardLogsScreen(), // <-- Updated to load the new NetGuard table
-    const SettingsScreen(),
-  ];
+  // 2. Change this from a static variable to a 'getter' so it can access 'widget.isDarkMode'
+  List<Widget> get _pages => [
+        const DefenseDashboardScreen(),
+        const NetGuardLogsScreen(),
+        SettingsScreen(
+          // 3. Pass the properties down to the Settings screen
+          isDarkMode: widget.isDarkMode,
+          onThemeChanged: widget.onThemeChanged,
+        ),
+      ];
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        // Set the breakpoint for desktop vs mobile view (800 pixels is standard)
         final isDesktop = constraints.maxWidth >= 800;
 
         return Scaffold(
-          // Only show the AppBar with a hamburger menu on narrow screens
           appBar: isDesktop
               ? null
               : AppBar(
                   title: const Text('PreFlight'),
                 ),
-          
-          // Only attach the Drawer on narrow screens
           drawer: isDesktop
               ? null
               : Drawer(
@@ -55,7 +63,7 @@ class _DashboardShellState extends State<DashboardShell> {
                         selected: _selectedIndex == 0,
                         onTap: () {
                           setState(() => _selectedIndex = 0);
-                          Navigator.pop(context); // Close drawer after selection
+                          Navigator.pop(context);
                         },
                       ),
                       ListTile(
@@ -67,14 +75,20 @@ class _DashboardShellState extends State<DashboardShell> {
                           Navigator.pop(context);
                         },
                       ),
+                      ListTile(
+                        leading: const Icon(Icons.settings),
+                        title: const Text('Settings'),
+                        selected: _selectedIndex == 2,
+                        onTap: () {
+                          setState(() => _selectedIndex = 2);
+                          Navigator.pop(context);
+                        },
+                      ),
                     ],
                   ),
                 ),
-          
-          // The main layout for the screen
           body: Row(
             children: [
-              // Only show the NavigationRail on wide screens
               if (isDesktop)
                 NavigationRail(
                   selectedIndex: _selectedIndex,
@@ -102,11 +116,7 @@ class _DashboardShellState extends State<DashboardShell> {
                     ),
                   ],
                 ),
-                
-              // A subtle divider to separate the rail from the main content
               if (isDesktop) const VerticalDivider(thickness: 1, width: 1),
-              
-              // The Expanded widget ensures the main content takes up all remaining screen space
               Expanded(
                 child: _pages[_selectedIndex],
               ),

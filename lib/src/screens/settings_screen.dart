@@ -1,7 +1,15 @@
 import 'package:flutter/material.dart';
 
 class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({super.key});
+  // 1. Define the variables this screen requires
+  final bool isDarkMode;
+  final ValueChanged<bool> onThemeChanged;
+
+  const SettingsScreen({
+    super.key,
+    required this.isDarkMode,
+    required this.onThemeChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -18,10 +26,12 @@ class SettingsScreen extends StatelessWidget {
           SwitchListTile(
             title: const Text('Dark Theme'),
             subtitle: const Text('Toggle global application theme'),
-            value: true, // Hardcoded for now
-            onChanged: (bool value) {},
+            // 2. Bind the UI to the variables passed in
+            value: isDarkMode,
+            onChanged: onThemeChanged,
             secondary: const Icon(Icons.dark_mode),
           ),
+          
           SwitchListTile(
             title: const Text('Real-time Scanning'),
             subtitle: const Text('Enable background port monitoring'),
@@ -60,7 +70,6 @@ class SettingsScreen extends StatelessWidget {
   }
 }
 
-// A private helper widget for consistent section headers
 class _SectionHeader extends StatelessWidget {
   final String title;
   const _SectionHeader({required this.title});
