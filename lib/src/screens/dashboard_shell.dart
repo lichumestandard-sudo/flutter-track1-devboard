@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'defense_dashboard_screen.dart';
 import 'netguard_logs_screen.dart';
 import 'settings_screen.dart';
@@ -20,12 +22,16 @@ class DashboardShell extends StatefulWidget {
 }
 
 class _DashboardShellState extends State<DashboardShell> {
+  static const _logsKey = 'netguard_logs';
+  static const _scanningKey = 'is_scanning';
+
   int _selectedIndex = 0;
   bool _isScanning = false;
+  bool _isLoaded = false;
   Timer? _scanTimer;
   final Random _random = Random();
 
-  final List<Map<String, String>> _logs = [
+  List<Map<String, String>> _logs = [
     {'time': '10:45:01 AM', 'ip': '192.168.1.10', 'port': '22', 'service': 'SSH', 'status': 'OPEN'},
     {'time': '10:45:03 AM', 'ip': '192.168.1.10', 'port': '80', 'service': 'HTTP', 'status': 'OPEN'},
     {'time': '10:45:05 AM', 'ip': '192.168.1.10', 'port': '443', 'service': 'HTTPS', 'status': 'OPEN'},
@@ -42,15 +48,57 @@ class _DashboardShellState extends State<DashboardShell> {
   ];
   static const List<String> _statuses = ['OPEN', 'CLOSED', 'FILTERED'];
 
+  @override
+  void initState() {
+    super.initState();
+    _loadState();
+  }
+
+  Future<void> _loadState() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedLogs = prefs.getString(_logsKey);
+    final savedScanning = prefs.getBool(_scanningKey) ?? false;
+
+    if (savedLogs != null) {
+      final decoded = jsonDecode(savedLogs) as List;
+      _logs = decoded.map((e) => Map<String, String>.from(e as Map)).toList();
+    }
+
+    setState(() {
+      _isScanning = savedScanning;
+      _isLoaded = true;
+    });
+
+    if (_isScanning) {
+      _startScanTimer();
+    }
+  }
+
+  Future<void> _saveLogs() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_logsKey, jsonEncode(_logs));
+  }
+
+  Future<void> _saveScanningState() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_scanningKey, _isScanning);
+  }
+
+  void _startScanTimer() {
+    _scanTimer?.cancel();
+    _scanTimer = Timer.periodic(const Duration(seconds: 4), (_) {
+      _addFakeLogEntry();
+    });
+  }
+
   void _toggleScanning(bool value) {
     setState(() {
       _isScanning = value;
     });
+    _saveScanningState();
 
     if (value) {
-      _scanTimer = Timer.periodic(const Duration(seconds: 4), (_) {
-        _addFakeLogEntry();
-      });
+      _startScanTimer();
     } else {
       _scanTimer?.cancel();
       _scanTimer = null;
@@ -64,14 +112,18 @@ class _DashboardShellState extends State<DashboardShell> {
     final formattedTime = now.format(context);
 
     setState(() {
-      _logs.insert(0, {
-        'time': formattedTime,
-        'ip': pick['ip']!,
-        'port': pick['port']!,
-        'service': pick['service']!,
-        'status': status,
-      });
+      _logs = [
+        {
+          'time': formattedTime,
+          'ip': pick['ip']!,
+          'port': pick['port']!,
+          'service': pick['service']!,
+          'status': status,
+        },
+        ..._logs,
+      ];
     });
+    _saveLogs();
   }
 
   @override
@@ -93,6 +145,12 @@ class _DashboardShellState extends State<DashboardShell> {
 
   @override
   Widget build(BuildContext context) {
+    if (!_isLoaded) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final isDesktop = constraints.maxWidth >= 800;
