@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 class NetGuardLogsScreen extends StatefulWidget {
-  const NetGuardLogsScreen({super.key});
+  final List<Map<String, String>> logs;
+
+  const NetGuardLogsScreen({super.key, required this.logs});
 
   @override
   State<NetGuardLogsScreen> createState() => _NetGuardLogsScreenState();
@@ -12,20 +14,10 @@ class _NetGuardLogsScreenState extends State<NetGuardLogsScreen> {
   bool _isAscending = true;
   String _searchQuery = '';
 
-  // The master list of logs
-  final List<Map<String, String>> _allLogs = [
-    {'time': '10:45:01 AM', 'ip': '192.168.1.10', 'port': '22', 'service': 'SSH', 'status': 'OPEN'},
-    {'time': '10:45:03 AM', 'ip': '192.168.1.10', 'port': '80', 'service': 'HTTP', 'status': 'OPEN'},
-    {'time': '10:45:05 AM', 'ip': '192.168.1.10', 'port': '443', 'service': 'HTTPS', 'status': 'OPEN'},
-    {'time': '10:46:12 AM', 'ip': '10.0.0.5', 'port': '21', 'service': 'FTP', 'status': 'CLOSED'},
-    {'time': '10:46:15 AM', 'ip': '10.0.0.5', 'port': '3306', 'service': 'MySQL', 'status': 'FILTERED'},
-  ];
-
-  // Dynamically filters the list based on the search query
   List<Map<String, String>> get _filteredLogs {
-    if (_searchQuery.isEmpty) return _allLogs;
-    
-    return _allLogs.where((log) {
+    if (_searchQuery.isEmpty) return widget.logs;
+
+    return widget.logs.where((log) {
       final ipMatch = log['ip']!.toLowerCase().contains(_searchQuery.toLowerCase());
       final statusMatch = log['status']!.toLowerCase().contains(_searchQuery.toLowerCase());
       return ipMatch || statusMatch;
@@ -36,11 +28,11 @@ class _NetGuardLogsScreenState extends State<NetGuardLogsScreen> {
     setState(() {
       _sortColumnIndex = columnIndex;
       _isAscending = ascending;
-      
-      _allLogs.sort((a, b) {
+
+      widget.logs.sort((a, b) {
         String valA = '';
         String valB = '';
-        
+
         switch (columnIndex) {
           case 0: valA = a['time']!; valB = b['time']!; break;
           case 1: valA = a['ip']!; valB = b['ip']!; break;
@@ -48,7 +40,7 @@ class _NetGuardLogsScreenState extends State<NetGuardLogsScreen> {
           case 3: valA = a['service']!; valB = b['service']!; break;
           case 4: valA = a['status']!; valB = b['status']!; break;
         }
-        
+
         return ascending ? valA.compareTo(valB) : valB.compareTo(valA);
       });
     });
@@ -65,7 +57,6 @@ class _NetGuardLogsScreenState extends State<NetGuardLogsScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
-          // The new Search Bar
           TextField(
             decoration: InputDecoration(
               labelText: 'Search by IP or Status (e.g., "10.0.0.5" or "OPEN")',
@@ -77,12 +68,11 @@ class _NetGuardLogsScreenState extends State<NetGuardLogsScreen> {
             ),
             onChanged: (value) {
               setState(() {
-                _searchQuery = value; // Triggers a rebuild with the filtered list
+                _searchQuery = value;
               });
             },
           ),
           const SizedBox(height: 16),
-          
           Card(
             elevation: 4,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -108,12 +98,11 @@ class _NetGuardLogsScreenState extends State<NetGuardLogsScreen> {
     );
   }
 
-  // Uses _filteredLogs instead of _logs
   List<DataRow> _buildLogRows() {
     return _filteredLogs.map((log) {
       final isOpen = log['status'] == 'OPEN';
       final isClosed = log['status'] == 'CLOSED';
-      
+
       return DataRow(
         cells: [
           DataCell(Text(log['time']!)),
@@ -124,16 +113,16 @@ class _NetGuardLogsScreenState extends State<NetGuardLogsScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: isOpen 
-                    ? Colors.green.withOpacity(0.2) 
+                color: isOpen
+                    ? Colors.green.withOpacity(0.2)
                     : (isClosed ? Colors.red.withOpacity(0.2) : Colors.orange.withOpacity(0.2)),
                 borderRadius: BorderRadius.circular(4),
               ),
               child: Text(
                 log['status']!,
                 style: TextStyle(
-                  color: isOpen 
-                      ? Colors.green 
+                  color: isOpen
+                      ? Colors.green
                       : (isClosed ? Colors.red : Colors.orange),
                   fontWeight: FontWeight.bold,
                 ),

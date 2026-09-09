@@ -1,10 +1,11 @@
+import 'dart:async';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'defense_dashboard_screen.dart';
 import 'netguard_logs_screen.dart';
 import 'settings_screen.dart';
 
 class DashboardShell extends StatefulWidget {
-  // 1. Accept the properties from main.dart
   final bool isDarkMode;
   final ValueChanged<bool> onThemeChanged;
 
@@ -20,15 +21,73 @@ class DashboardShell extends StatefulWidget {
 
 class _DashboardShellState extends State<DashboardShell> {
   int _selectedIndex = 0;
+  bool _isScanning = false;
+  Timer? _scanTimer;
+  final Random _random = Random();
 
-  // 2. Change this from a static variable to a 'getter' so it can access 'widget.isDarkMode'
+  final List<Map<String, String>> _logs = [
+    {'time': '10:45:01 AM', 'ip': '192.168.1.10', 'port': '22', 'service': 'SSH', 'status': 'OPEN'},
+    {'time': '10:45:03 AM', 'ip': '192.168.1.10', 'port': '80', 'service': 'HTTP', 'status': 'OPEN'},
+    {'time': '10:45:05 AM', 'ip': '192.168.1.10', 'port': '443', 'service': 'HTTPS', 'status': 'OPEN'},
+    {'time': '10:46:12 AM', 'ip': '10.0.0.5', 'port': '21', 'service': 'FTP', 'status': 'CLOSED'},
+    {'time': '10:46:15 AM', 'ip': '10.0.0.5', 'port': '3306', 'service': 'MySQL', 'status': 'FILTERED'},
+  ];
+
+  static const List<Map<String, String>> _fakePool = [
+    {'ip': '192.168.1.14', 'port': '8080', 'service': 'HTTP-Alt'},
+    {'ip': '192.168.1.22', 'port': '3389', 'service': 'RDP'},
+    {'ip': '10.0.0.8', 'port': '5432', 'service': 'PostgreSQL'},
+    {'ip': '10.0.0.12', 'port': '25', 'service': 'SMTP'},
+    {'ip': '192.168.1.30', 'port': '53', 'service': 'DNS'},
+  ];
+  static const List<String> _statuses = ['OPEN', 'CLOSED', 'FILTERED'];
+
+  void _toggleScanning(bool value) {
+    setState(() {
+      _isScanning = value;
+    });
+
+    if (value) {
+      _scanTimer = Timer.periodic(const Duration(seconds: 4), (_) {
+        _addFakeLogEntry();
+      });
+    } else {
+      _scanTimer?.cancel();
+      _scanTimer = null;
+    }
+  }
+
+  void _addFakeLogEntry() {
+    final pick = _fakePool[_random.nextInt(_fakePool.length)];
+    final status = _statuses[_random.nextInt(_statuses.length)];
+    final now = TimeOfDay.now();
+    final formattedTime = now.format(context);
+
+    setState(() {
+      _logs.insert(0, {
+        'time': formattedTime,
+        'ip': pick['ip']!,
+        'port': pick['port']!,
+        'service': pick['service']!,
+        'status': status,
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _scanTimer?.cancel();
+    super.dispose();
+  }
+
   List<Widget> get _pages => [
         const DefenseDashboardScreen(),
-        const NetGuardLogsScreen(),
+        NetGuardLogsScreen(logs: _logs),
         SettingsScreen(
-          // 3. Pass the properties down to the Settings screen
           isDarkMode: widget.isDarkMode,
           onThemeChanged: widget.onThemeChanged,
+          isScanning: _isScanning,
+          onScanToggled: _toggleScanning,
         ),
       ];
 

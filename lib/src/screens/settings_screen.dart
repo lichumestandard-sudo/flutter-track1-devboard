@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 
 class SettingsScreen extends StatelessWidget {
-  // 1. Define the variables this screen requires
   final bool isDarkMode;
   final ValueChanged<bool> onThemeChanged;
+  final bool isScanning;
+  final ValueChanged<bool> onScanToggled;
 
   const SettingsScreen({
     super.key,
     required this.isDarkMode,
     required this.onThemeChanged,
+    required this.isScanning,
+    required this.onScanToggled,
   });
 
   @override
@@ -26,21 +29,20 @@ class SettingsScreen extends StatelessWidget {
           SwitchListTile(
             title: const Text('Dark Theme'),
             subtitle: const Text('Toggle global application theme'),
-            // 2. Bind the UI to the variables passed in
             value: isDarkMode,
             onChanged: onThemeChanged,
             secondary: const Icon(Icons.dark_mode),
           ),
-          
           SwitchListTile(
             title: const Text('Real-time Scanning'),
-            subtitle: const Text('Enable background port monitoring'),
-            value: false,
-            onChanged: (bool value) {},
+            subtitle: Text(isScanning
+                ? 'Actively monitoring — new results incoming'
+                : 'Enable background port monitoring'),
+            value: isScanning,
+            onChanged: onScanToggled,
             secondary: const Icon(Icons.radar),
           ),
           const Divider(height: 32),
-          
           const _SectionHeader(title: 'Account & Workspace'),
           ListTile(
             leading: const Icon(Icons.person),
@@ -57,7 +59,6 @@ class SettingsScreen extends StatelessWidget {
             onTap: () {},
           ),
           const Divider(height: 32),
-          
           const _SectionHeader(title: 'Danger Zone'),
           ListTile(
             leading: const Icon(Icons.delete_forever, color: Colors.red),
