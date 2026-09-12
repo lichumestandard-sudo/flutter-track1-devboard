@@ -126,6 +126,13 @@ class _DashboardShellState extends State<DashboardShell> {
     _saveLogs();
   }
 
+  void _clearLogs() {
+    setState(() {
+      _logs = [];
+    });
+    _saveLogs();
+  }
+
   @override
   void dispose() {
     _scanTimer?.cancel();
@@ -140,6 +147,7 @@ class _DashboardShellState extends State<DashboardShell> {
           onThemeChanged: widget.onThemeChanged,
           isScanning: _isScanning,
           onScanToggled: _toggleScanning,
+          onClearLogs: _clearLogs,
         ),
       ];
 

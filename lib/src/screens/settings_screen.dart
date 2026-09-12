@@ -5,6 +5,7 @@ class SettingsScreen extends StatelessWidget {
   final ValueChanged<bool> onThemeChanged;
   final bool isScanning;
   final ValueChanged<bool> onScanToggled;
+  final VoidCallback onClearLogs;
 
   const SettingsScreen({
     super.key,
@@ -12,7 +13,38 @@ class SettingsScreen extends StatelessWidget {
     required this.onThemeChanged,
     required this.isScanning,
     required this.onScanToggled,
+    required this.onClearLogs,
   });
+
+  Future<void> _confirmClear(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Clear Local Cache?'),
+        content: const Text(
+            'This deletes all saved NetGuard scan logs from this device. This cannot be undone.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Clear', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      onClearLogs();
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Local cache cleared.')),
+        );
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +95,7 @@ class SettingsScreen extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.delete_forever, color: Colors.red),
             title: const Text('Clear Local Cache', style: TextStyle(color: Colors.red)),
-            onTap: () {},
+            onTap: () => _confirmClear(context),
           ),
         ],
       ),
